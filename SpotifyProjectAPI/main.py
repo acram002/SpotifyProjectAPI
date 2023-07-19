@@ -1,6 +1,6 @@
 #Alexander Cramer
 #Spotify API Project
-#Currently prints top 10 tracks from entered artist
+#Allows user to see a selected number of top tracks from an artist(<=10)
 #Uses Spotify API, generates token with client id and secret
 
 from dotenv import load_dotenv
@@ -8,6 +8,7 @@ import os
 import base64
 from requests import post, get
 import json
+import tkinter as tk
 
 load_dotenv()
 
@@ -26,9 +27,6 @@ def get_token():
     }
     data = {"grant_type":"client_credentials"}
     result = post(url, headers=headers, data=data)
-    
-    #data = result.content
-    #json_result = json.loads(data.decode("UTF-8"))
     json_result = json.loads(result.content)
     token = json_result["access_token"]
     return token
@@ -57,10 +55,28 @@ def get_songs_by_artist(token, artist_id):
     json_result = json.loads(result.content)["tracks"]
     return json_result
 
-token = get_token()
-result = search_for_artist(token, "ACDC")
-artist_id = result["id"]
-songs = get_songs_by_artist(token, artist_id)
+def search_artist():
+    artist_name = entry.get()  # Get the artist name from the entry widget
+    num_songs = int(songs_entry.get())  # Get the number of songs from the entry widget
+    result = search_for_artist(token, artist_name)
+    if result is not None:
+        artist_id = result["id"]
+        songs = get_songs_by_artist(token, artist_id)
+        for idx, song in enumerate(songs[:num_songs]):
+            print(f"{idx + 1}. {song['name']}")
 
-for idx, song in enumerate(songs):
-    print(f"{idx + 1}. {song['name']}")
+token = get_token()
+
+window = tk.Tk()
+window.title("Artist Top Tracks")
+label = tk.Label(window, text="Enter an artist:")
+label.pack()
+entry = tk.Entry(window)
+entry.pack()
+label_songs = tk.Label(window, text="Enter the number of songs(<=10):")
+label_songs.pack()
+songs_entry = tk.Entry(window)
+songs_entry.pack()
+button = tk.Button(window, text="Search", command=search_artist)
+button.pack()
+window.mainloop()
