@@ -15,7 +15,7 @@ load_dotenv()
 
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
-username = "crameralex1"
+#username = "crameralex1"
 
 def get_token():
     auth_string = client_id + ":" + client_secret
@@ -65,8 +65,6 @@ def get_user_playlists(token, username):
         return None
 
 
-
-
 def get_songs_by_artist(token, artist_id):
     url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks?country=US"
     headers = get_auth_header(token)
@@ -74,12 +72,13 @@ def get_songs_by_artist(token, artist_id):
     json_result = json.loads(result.content)["tracks"]
     return json_result
 
-def search_artist():
-    
+def print_user_playlists():
+    username = username_entry.get()
     playlists = get_user_playlists(token, username)
     for playlist in playlists:
         print(playlist["name"])
-    
+
+def search_artist():
     artist_name = entry.get()  # Get the artist name from the entry widget
     num_songs = int(songs_entry.get())  # Get the number of songs from the entry widget
     result = search_for_artist(token, artist_name)
@@ -101,6 +100,12 @@ label_songs = tk.Label(window, text="Enter the number of songs(<=10):")
 label_songs.pack()
 songs_entry = tk.Entry(window)
 songs_entry.pack()
-button = tk.Button(window, text="Search", command=search_artist)
+label_username = tk.Label(window, text="Enter username:")
+label_username.pack()
+username_entry = tk.Entry(window)
+username_entry.pack()
+button = tk.Button(window, text="Search Artists", command=search_artist)
+button.pack()
+button = tk.Button(window, text="Search Username", command=print_user_playlists)
 button.pack()
 window.mainloop()
