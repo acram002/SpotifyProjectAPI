@@ -10,6 +10,7 @@ from requests import post, get
 import requests
 import json
 import tkinter as tk
+import spotipy
 
 load_dotenv()
 
@@ -77,6 +78,52 @@ def print_user_playlists():
     playlists = get_user_playlists(token, username)
     for playlist in playlists:
         print(playlist["name"])
+        
+def call_playlist_id():
+    username = username_entry.get()
+    playlist_ids = get_playlist_id(token, username)
+    for playlist_id in playlist_ids:
+        songs = get_playlist_songs(token, playlist_id)
+        for song in songs:
+            print(song["name"])
+    
+def get_playlist_id(token, username):
+    """Get the playlist ID of a user's playlists."""
+    url = "https://api.spotify.com/v1/users/{}/playlists".format(username)
+    response = requests.get(url, headers={"Authorization": "Bearer {}".format(token)})
+    if response.status_code == 200:
+        playlists_data = response.json()
+        playlist_ids = []
+        for playlist in playlists_data["items"]:  # Access the "items" list
+            playlist_id = playlist["id"]
+            playlist_ids.append(playlist_id)
+        return playlist_ids
+    else:
+        return None
+
+def get_playlist_ids(token, username):
+    """Get the playlist ID of a user's playlists."""
+    url = "https://api.spotify.com/v1/users/{}/playlists".format(username)
+    response = requests.get(url, headers={"Authorization": "Bearer {}".format(token)})
+    if response.status_code == 200:
+        playlists = response.json()
+        playlist_ids = []
+        for playlist in playlists:
+            playlist_id = int(playlist["id"])
+            playlist_ids.append(playlist_id)
+        return playlist_ids
+    else:
+        return None
+    
+def get_playlist_songs(token, playlist_id):
+    """Get the songs from a user's playlist."""
+    sp = spotipy.Spotify(auth=token)
+    response = sp.playlist_tracks(playlist_id)
+    songs = []
+    for item in response["items"]:
+        song = item["track"]
+        songs.append(song)
+    return songs
 
 def search_artist():
     artist_name = entry.get()  # Get the artist name from the entry widget
@@ -106,6 +153,6 @@ username_entry = tk.Entry(window)
 username_entry.pack()
 button = tk.Button(window, text="Search Artists", command=search_artist)
 button.pack()
-button = tk.Button(window, text="Search Username", command=print_user_playlists)
+button = tk.Button(window, text="Search Username", command=call_playlist_id)
 button.pack()
 window.mainloop()
